@@ -252,3 +252,58 @@ def get_axes(config: ChirpConfig) -> dict:
         "max_range":     config.max_range,
         "max_velocity":  config.max_velocity,
     }
+def simulate_vital_sign_phase_sequence(
+    target:         TargetConfig,
+    center_freq:    float = 77e9,
+    duration_s:     float = 10.0,
+    frame_rate_hz:  float = 20.0,
+    phase_noise_std: float = 0.05,
+    rng_seed:       int = None,
+) -> dict:
+    """
+    Simulate the slow-time (frame-rate) phase signal used for vital sign
+    extraction. This is a SEPARATE timescale from the chirp-to-chirp axis
+    used for Range-Doppler processing.
+
+    Each "sample" here represents one full radar FRAME (not one chirp) —
+    e.g. the phase of the target's range bin extracted once per frame.
+    Frame rate is typically 10-20 Hz, giving enough samples over several
+    seconds to resolve breathing (~0.2-0.5 Hz) and heartbeat (~0.8-2 Hz).
+
+    Returns
+    -------
+    dict with:
+        phase_signal : ndarray, unwrapped phase, DC-removed
+        time_axis    : ndarray, seconds
+        fs           : float, sample rate = frame_rate_hz
+    """
+    c = 3e8
+    rng = np.random.default_rng(rng_seed)
+
+    n_samples = int(duration_s * frame_rate_hz)
+    t = np.arange(n_samples) / frame_rate_hz
+
+    r_breath = target.breathing_amplitude_m * np.sin(
+        2.0 * np.pi * target.breathing_rate_hz * t
+    )
+    r_heart = np.zeros_like(t)
+    if target.enable_heartbeat:
+        r_heart = target.heartbeat_amplitude_m * np.sin(
+            2.0 * np.pi * target.heartbeat_rate_hz * t
+        )
+
+    r_total = target.range_m + target.velocity_mps * t + r_breath + r_heart
+    tau = 2.0 * r_total / c
+
+    # Carrier phase — this is the sensitive term: Δφ = 4π·Δr/λ
+    phase = 2.0 * np.pi * center_freq * tau
+    phase += rng.normal(0.0, phase_noise_std, size=n_samples)  # phase noise
+
+    phase_unwrapped = np.unwrap(phase)
+    phase_unwrapped -= np.mean(phase_unwrapped)
+
+    return {
+        "phase_signal": phase_unwrapped,
+        "time_axis":    t,
+        "fs":           frame_rate_hz,
+    }
