@@ -1,15 +1,35 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { usePipeline } from '@/hooks/usePipeline'
 import { useWebSocket } from '@/hooks/useWebSocket'
+import ChirpConfig from '@/components/ChirpConfig'
+import TargetPanel from '@/components/TargetPanel'
+import PipelineSteps from '@/components/PipelineSteps'
+
+// Plotly touches `window` — must be client-only, no SSR
+const RangeDopplerMap = dynamic(() => import('@/components/RangeDopplerMap'), { ssr: false })
 
 export default function Home() {
   const { config, updateConfig, result, loading, error, runSimulation } = usePipeline()
   const { connected, steps, summary, running, wsError, runPipeline } = useWebSocket()
 
+  // Prefer the live WS Doppler-FFT step payload if a live run has completed it,
+  // otherwise fall back to the last REST simulation result.
+  const dopplerStep = steps[2]?.data
+  const cfarStep = steps[3]?.data
+  const vitalsStep = steps[5]?.data
+
+  const rdMap = dopplerStep?.range_doppler_db ?? result?.range_doppler_db
+  const rangeAxis = dopplerStep?.range_axis ?? result?.range_axis
+  const velocityAxis = dopplerStep?.velocity_axis ?? result?.velocity_axis
+  const detections = cfarStep?.detections ?? result?.detections ?? []
+  const breathingRate = vitalsStep?.breathing_rate_bpm ?? result?.breathing_rate_bpm
+  const heartRate = vitalsStep?.heart_rate_bpm ?? result?.heart_rate_bpm
+  const vitalsDetected = vitalsStep?.vital_signs_detected ?? result?.vital_signs_detected ?? false
+
   return (
     <main className="min-h-screen px-6 py-8 max-w-[1400px] mx-auto">
-      {/* ── Header ──────────────────────────────────────────── */}
       <header className="flex items-end justify-between mb-8 pb-5 border-b border-scope-border">
         <div>
           <h1 className="font-display text-2xl font-semibold tracking-tight text-scope-text">
@@ -23,43 +43,46 @@ export default function Home() {
         </div>
       </header>
 
-      {/* ── Placeholder grid — populated in Phase 6/7 ──────────── */}
       <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-12 lg:col-span-3 panel">
-          <div className="panel-header">
-            <span className="status-dot idle" /> Chirp Config
-          </div>
-          <p className="mono">Sliders arrive in Phase 6.</p>
+        <div className="col-span-12 lg:col-span-3 flex flex-col gap-4">
+          <ChirpConfig
+            config={config}
+            onChange={updateConfig}
+            onRun={runSimulation}
+            onRunLive={() => runPipeline(config)}
+            loading={loading}
+            running={running}
+            wsConnected={connected}
+          />
+          <PipelineSteps steps={steps} running={running} summary={summary} />
         </div>
 
-        <div className="col-span-12 lg:col-span-9 panel">
-          <div className="panel-header">
-            <span className={`status-dot ${running ? 'processing' : 'idle'}`} /> Range-Doppler Map
+        <div className="col-span-12 lg:col-span-9 flex flex-col gap-4">
+          <div className="panel">
+            <div className="panel-header">
+              <span className={`status-dot ${running ? 'processing' : 'idle'}`} /> Range-Doppler Map
+            </div>
+            {(error || wsError) && (
+              <p className="mono mb-3" style={{ color: 'var(--danger)' }}>
+                {error || wsError}
+              </p>
+            )}
+            <RangeDopplerMap
+              rangeAxis={rangeAxis}
+              velocityAxis={velocityAxis}
+              rdMap={rdMap}
+              detections={detections}
+            />
           </div>
-          <p className="mono">
-            {error || wsError
-              ? `Error: ${error || wsError}`
-              : result
-              ? `Last simulation: peak range present in response, ${result.detections.length} detection(s).`
-              : 'Plotly visualization arrives in Phase 6.'}
-          </p>
+
+          <TargetPanel
+            detections={detections}
+            breathingRate={breathingRate}
+            heartRate={heartRate}
+            vitalsDetected={vitalsDetected}
+          />
         </div>
       </div>
-
-      <div className="mt-4 flex gap-3">
-        <button className="btn-primary" disabled={loading} onClick={runSimulation}>
-          {loading ? 'Simulating...' : 'Run Simulation (REST)'}
-        </button>
-        <button className="btn-secondary" disabled={running || !connected} onClick={() => runPipeline(config)}>
-          {running ? 'Streaming...' : 'Run Live Pipeline (WS)'}
-        </button>
-      </div>
-
-      {summary && (
-        <p className="mono mt-3">
-          WS complete — target_detected: {String(summary.target_detected)}, detections: {summary.num_detections}
-        </p>
-      )}
     </main>
   )
 }
