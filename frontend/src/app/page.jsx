@@ -6,18 +6,20 @@ import { useWebSocket } from '@/hooks/useWebSocket'
 import ChirpConfig from '@/components/ChirpConfig'
 import TargetPanel from '@/components/TargetPanel'
 import PipelineSteps from '@/components/PipelineSteps'
+import VitalSignsPanel from '@/components/VitalSignsPanel'
+import DatasetUploader from '@/components/DatasetUploader'
 
 // Plotly touches `window` — must be client-only, no SSR
 const RangeDopplerMap = dynamic(() => import('@/components/RangeDopplerMap'), { ssr: false })
+const MicroDopplerPlot = dynamic(() => import('@/components/MicroDopplerPlot'), { ssr: false })
 
 export default function Home() {
-  const { config, updateConfig, result, loading, error, runSimulation } = usePipeline()
+  const { config, updateConfig, result, loading, error, runSimulation, runUpload } = usePipeline()
   const { connected, steps, summary, running, wsError, runPipeline } = useWebSocket()
 
-  // Prefer the live WS Doppler-FFT step payload if a live run has completed it,
-  // otherwise fall back to the last REST simulation result.
   const dopplerStep = steps[2]?.data
   const cfarStep = steps[3]?.data
+  const cwtStep = steps[4]?.data
   const vitalsStep = steps[5]?.data
 
   const rdMap = dopplerStep?.range_doppler_db ?? result?.range_doppler_db
@@ -27,6 +29,11 @@ export default function Home() {
   const breathingRate = vitalsStep?.breathing_rate_bpm ?? result?.breathing_rate_bpm
   const heartRate = vitalsStep?.heart_rate_bpm ?? result?.heart_rate_bpm
   const vitalsDetected = vitalsStep?.vital_signs_detected ?? result?.vital_signs_detected ?? false
+  const phaseSignal = vitalsStep?.phase_signal ?? result?.phase_signal
+  const breathingSignal = vitalsStep?.breathing_signal ?? result?.breathing_signal
+  const cwtPowerDb = cwtStep?.cwt_power_db ?? result?.cwt_power_db
+  const cwtTimeAxis = cwtStep?.time_axis ?? result?.cwt_time_axis
+  const cwtFreqAxis = cwtStep?.frequency_axis_bpm ?? result?.cwt_frequency_axis
 
   return (
     <main className="min-h-screen px-6 py-8 max-w-[1400px] mx-auto">
@@ -55,6 +62,7 @@ export default function Home() {
             wsConnected={connected}
           />
           <PipelineSteps steps={steps} running={running} summary={summary} />
+          <DatasetUploader onUpload={runUpload} loading={loading} />
         </div>
 
         <div className="col-span-12 lg:col-span-9 flex flex-col gap-4">
@@ -81,6 +89,19 @@ export default function Home() {
             heartRate={heartRate}
             vitalsDetected={vitalsDetected}
           />
+
+          <div className="panel">
+            <div className="panel-header">
+              <span className={`status-dot ${vitalsDetected ? 'detected' : 'idle'}`} /> Micro-Doppler Spectrogram
+            </div>
+            <MicroDopplerPlot
+              cwtPowerDb={cwtPowerDb}
+              timeAxis={cwtTimeAxis}
+              frequencyAxisBpm={cwtFreqAxis}
+            />
+          </div>
+
+          <VitalSignsPanel phaseSignal={phaseSignal} breathingSignal={breathingSignal} />
         </div>
       </div>
     </main>
