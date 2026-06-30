@@ -1,6 +1,7 @@
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
+  darkMode: 'class',
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -9,30 +10,26 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        scope: {
-          bg:          '#0a0e0a',
-          surface:     '#0e130c',
-          panel:       '#141a12',
-          'panel-2':   '#182015',
-          border:      '#2a3326',
-          'border-lit':'#3d4a35',
-          phosphor:    '#8fd13f',
-          'phosphor-dim': '#3d4d2a',
-          'phosphor-glow': 'rgba(143, 209, 63, 0.18)',
-          amber:       '#e8973a',
-          'amber-dim': '#5c3d18',
-          'amber-glow':'rgba(232, 151, 58, 0.18)',
-          steel:       '#6b8a9e',
-          'steel-dim': '#2e3d44',
-          danger:      '#c5524a',
-          text:        '#d8ddd0',
-          'text-dim':  '#6f7a64',
-          'text-faint':'#4a5440',
+        app: {
+          bg:        'var(--bg)',
+          surface:   'var(--surface)',
+          card:      'var(--card)',
+          border:    'var(--border)',
+          text:      'var(--text)',
+          'text-dim':'var(--text-dim)',
+          accent:    'var(--accent)',
+          'accent-text': 'var(--accent-text)',
+          good:      'var(--good)',
+          warn:      'var(--warn)',
+          bad:       'var(--bad)',
         },
       },
       fontFamily: {
-        mono: ['IBM Plex Mono', 'monospace'],
-        display: ['Space Grotesk', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      borderRadius: {
+        card: '16px',
+        pill: '999px',
       },
     },
   },

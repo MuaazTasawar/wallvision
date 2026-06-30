@@ -2,12 +2,6 @@
 
 import { useState, useRef } from 'react'
 
-/**
- * Drag-drop uploader for raw TI DCA1000 .bin captures. The user must
- * declare num_chirps/num_samples since the .bin file has no header
- * describing its own shape (matches the backend's validate_capture_size
- * pre-flight check).
- */
 export default function DatasetUploader({ onUpload, loading }) {
   const [dragOver, setDragOver] = useState(false)
   const [file, setFile] = useState(null)
@@ -28,61 +22,39 @@ export default function DatasetUploader({ onUpload, loading }) {
   }
 
   return (
-    <div className="panel">
-      <div className="panel-header">
-        <span className="status-dot idle" /> TI mmWave Dataset Upload
-      </div>
+    <div className="card">
+      <div className="card-title">TI mmWave Dataset</div>
+      <div className="card-subtitle">Upload a raw DCA1000 .bin capture</div>
 
       <div
         onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
-        className="border border-dashed rounded-sm p-6 text-center cursor-pointer transition-colors"
+        className="rounded-xl p-6 text-center cursor-pointer transition-colors text-[0.82rem]"
         style={{
-          borderColor: dragOver ? 'var(--phosphor)' : 'var(--border)',
-          background: dragOver ? 'var(--phosphor-glow)' : 'transparent',
+          border: `1.5px dashed ${dragOver ? 'var(--accent)' : 'var(--border)'}`,
+          background: dragOver ? 'var(--surface)' : 'transparent',
+          color: 'var(--text-dim)',
         }}
       >
-        <input
-          ref={inputRef}
-          type="file"
-          accept=".bin"
-          className="hidden"
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-        />
-        <p className="mono">
-          {file ? file.name : 'Drop a DCA1000 .bin capture here, or click to browse'}
-        </p>
+        <input ref={inputRef} type="file" accept=".bin" className="hidden" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+        {file ? file.name : 'Drop a .bin capture here, or click to browse'}
       </div>
 
       <div className="grid grid-cols-2 gap-3 mt-4">
         <div>
-          <div className="mono mb-1">Num Chirps</div>
-          <input
-            type="number"
-            value={numChirps}
-            onChange={(e) => setNumChirps(parseInt(e.target.value) || 0)}
-            className="w-full bg-transparent border border-scope-border rounded-sm px-2 py-1 mono text-scope-text"
-          />
+          <div className="text-[0.72rem] mb-1" style={{ color: 'var(--text-dim)' }}>Num Chirps</div>
+          <input type="number" value={numChirps} onChange={(e) => setNumChirps(parseInt(e.target.value) || 0)} className="text-input" />
         </div>
         <div>
-          <div className="mono mb-1">Num Samples</div>
-          <input
-            type="number"
-            value={numSamples}
-            onChange={(e) => setNumSamples(parseInt(e.target.value) || 0)}
-            className="w-full bg-transparent border border-scope-border rounded-sm px-2 py-1 mono text-scope-text"
-          />
+          <div className="text-[0.72rem] mb-1" style={{ color: 'var(--text-dim)' }}>Num Samples</div>
+          <input type="number" value={numSamples} onChange={(e) => setNumSamples(parseInt(e.target.value) || 0)} className="text-input" />
         </div>
       </div>
 
-      <button
-        className="btn-primary w-full mt-4"
-        disabled={!file || loading}
-        onClick={handleSubmit}
-      >
-        {loading ? 'Processing capture...' : 'Process Dataset'}
+      <button className="btn-primary w-full mt-4" disabled={!file || loading} onClick={handleSubmit}>
+        {loading ? 'Processing...' : 'Process Dataset'}
       </button>
     </div>
   )
