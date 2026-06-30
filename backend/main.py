@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from api.routes import router as api_router
+from api.websocket import router as ws_router
+
 app = FastAPI(
     title="WallVision API",
     description="FMCW Radar Signal Processing Pipeline — Through-Wall Human Detection",
@@ -14,6 +17,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(api_router)
+app.include_router(ws_router)
 
 
 @app.get("/health")
