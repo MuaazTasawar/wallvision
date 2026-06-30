@@ -2,186 +2,179 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 :root {
-  --bg:           #080c10;
-  --surface:      #0d1117;
-  --panel:        #0f1923;
-  --border:       #1a2332;
-  --orange:       #f97316;
-  --orange-glow:  rgba(249, 115, 22, 0.2);
-  --green:        #00ff88;
-  --green-glow:   rgba(0, 255, 136, 0.15);
-  --cyan:         #06b6d4;
-  --red:          #ef4444;
-  --text:         #e2e8f0;
-  --text-dim:     #718096;
+  --bg:            #0a0e0a;
+  --surface:       #0e130c;
+  --panel:         #141a12;
+  --panel-2:       #182015;
+  --border:        #2a3326;
+  --border-lit:    #3d4a35;
+  --phosphor:      #8fd13f;
+  --phosphor-dim:  #3d4d2a;
+  --phosphor-glow: rgba(143, 209, 63, 0.18);
+  --amber:         #e8973a;
+  --amber-dim:     #5c3d18;
+  --amber-glow:    rgba(232, 151, 58, 0.18);
+  --steel:         #6b8a9e;
+  --steel-dim:     #2e3d44;
+  --danger:        #c5524a;
+  --text:          #d8ddd0;
+  --text-dim:      #6f7a64;
+  --text-faint:    #4a5440;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
   background-color: var(--bg);
   color: var(--text);
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
+  /* faint radial vignette — like light falloff on a CRT housing */
+  background-image: radial-gradient(ellipse 120% 80% at 50% -10%, rgba(143,209,63,0.05), transparent 60%);
 }
 
-/* ── Scrollbar ───────────────────────────────────── */
 ::-webkit-scrollbar       { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: var(--surface); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--orange); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--phosphor-dim); }
 
-/* ── Panel ───────────────────────────────────────── */
+/* ── Console panel ───────────────────────────────────── */
 .panel {
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 1rem;
+  border-radius: 3px;
+  padding: 1.1rem;
+  position: relative;
 }
 
 .panel-header {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.12em;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--orange);
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.5rem;
+  color: var(--phosphor);
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.55rem;
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-/* ── Status dot ──────────────────────────────────── */
-.status-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.status-dot.online     { background: var(--green);  box-shadow: 0 0 8px var(--green);  animation: pulse 2s ease-in-out infinite; }
-.status-dot.processing { background: var(--orange); box-shadow: 0 0 8px var(--orange); animation: pulse 1s ease-in-out infinite; }
-.status-dot.idle       { background: var(--text-dim); }
-.status-dot.detected   { background: var(--green);  box-shadow: 0 0 14px var(--green); }
+/* ── Status indicators ──────────────────────────────── */
+.status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.status-dot.online     { background: var(--phosphor); box-shadow: 0 0 7px var(--phosphor); animation: pulse-glow 2.4s ease-in-out infinite; }
+.status-dot.processing { background: var(--amber);    box-shadow: 0 0 7px var(--amber);    animation: pulse-glow 1s ease-in-out infinite; }
+.status-dot.idle       { background: var(--text-faint); }
+.status-dot.detected   { background: var(--phosphor); box-shadow: 0 0 12px var(--phosphor); }
 
-/* ── Metric readout ──────────────────────────────── */
-.metric-value {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: var(--green);
-  text-shadow: 0 0 24px var(--green-glow);
-  line-height: 1;
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
 }
+
+/* ── Readout ─────────────────────────────────────────── */
+.metric-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 2.1rem;
+  font-weight: 600;
+  color: var(--phosphor);
+  text-shadow: 0 0 18px var(--phosphor-glow);
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+.metric-value.amber { color: var(--amber); text-shadow: 0 0 18px var(--amber-glow); }
 
 .metric-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.65rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
   color: var(--text-dim);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
-  margin-top: 0.25rem;
+  margin-top: 0.3rem;
 }
 
-/* ── Slider ──────────────────────────────────────── */
+/* ── Slider ──────────────────────────────────────────── */
 input[type='range'] {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 3px;
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 2px;
   background: var(--border);
-  border-radius: 2px;
-  outline: none;
-  cursor: pointer;
+  border-radius: 1px; outline: none; cursor: pointer;
 }
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 13px;
-  height: 13px;
-  background: var(--orange);
+  width: 12px; height: 12px;
+  background: var(--phosphor);
   border-radius: 50%;
-  box-shadow: 0 0 6px var(--orange-glow);
+  box-shadow: 0 0 5px var(--phosphor-glow);
   cursor: pointer;
   transition: box-shadow 0.15s;
 }
-input[type='range']::-webkit-slider-thumb:hover {
-  box-shadow: 0 0 14px var(--orange);
-}
+input[type='range']::-webkit-slider-thumb:hover { box-shadow: 0 0 12px var(--phosphor); }
 
-/* ── Button ──────────────────────────────────────── */
+/* ── Buttons ─────────────────────────────────────────── */
 .btn-primary {
-  background: var(--orange);
-  color: #000;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 0.55rem 1.4rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+  background: var(--phosphor);
+  color: #0a0e0a;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  padding: 0.55rem 1.35rem;
+  border: none; border-radius: 2px; cursor: pointer;
   transition: box-shadow 0.15s, transform 0.1s;
 }
-.btn-primary:hover    { box-shadow: 0 0 18px var(--orange-glow); transform: translateY(-1px); }
+.btn-primary:hover    { box-shadow: 0 0 16px var(--phosphor-glow); transform: translateY(-1px); }
 .btn-primary:active   { transform: translateY(0); }
-.btn-primary:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-primary:disabled { opacity: 0.3; cursor: not-allowed; transform: none; box-shadow: none; }
 
 .btn-secondary {
   background: transparent;
-  color: var(--orange);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 0.55rem 1.4rem;
-  border: 1px solid var(--orange);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.15s, box-shadow 0.15s;
+  color: var(--phosphor);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem; font-weight: 600;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  padding: 0.55rem 1.35rem;
+  border: 1px solid var(--phosphor-dim);
+  border-radius: 2px; cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
 }
-.btn-secondary:hover { background: var(--orange-glow); box-shadow: 0 0 12px var(--orange-glow); }
+.btn-secondary:hover { background: var(--phosphor-glow); border-color: var(--phosphor); }
 
-/* ── Detection badge ─────────────────────────────── */
+/* ── Badges ──────────────────────────────────────────── */
 .badge {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.62rem;
-  padding: 0.15rem 0.45rem;
-  border-radius: 3px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  padding: 0.14rem 0.42rem;
+  border-radius: 2px;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.09em;
 }
-.badge-green { border: 1px solid var(--green); color: var(--green); background: var(--green-glow); }
-.badge-orange { border: 1px solid var(--orange); color: var(--orange); background: var(--orange-glow); }
-.badge-red { border: 1px solid var(--red); color: var(--red); background: rgba(239,68,68,0.1); }
+.badge-phosphor { border: 1px solid var(--phosphor); color: var(--phosphor); background: var(--phosphor-glow); }
+.badge-amber    { border: 1px solid var(--amber);    color: var(--amber);    background: var(--amber-glow); }
+.badge-danger   { border: 1px solid var(--danger);   color: var(--danger);   background: rgba(197,82,74,0.1); }
 
-/* ── Mono label ──────────────────────────────────── */
 .mono {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.74rem;
   color: var(--text-dim);
 }
 
-/* ── Scanline overlay (cosmetic) ─────────────────── */
-.scanlines {
+/* ── Scope texture — the signature element ─────────────
+   Faint scanlines + soft vignette, used once on the root
+   shell only, like the curved glass of an analog scope. ── */
+.scope-texture {
   pointer-events: none;
   position: fixed;
   inset: 0;
   background: repeating-linear-gradient(
     to bottom,
-    transparent 0px, transparent 2px,
-    rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px
+    transparent 0px, transparent 3px,
+    rgba(143,209,63,0.025) 3px, rgba(143,209,63,0.025) 4px
   );
   z-index: 9999;
-  opacity: 0.4;
 }
