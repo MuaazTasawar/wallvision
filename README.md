@@ -1,6 +1,6 @@
 # WallVision
 
-> A complete FMCW radar signal processing pipeline — from raw chirp simulation to through-wall human detection and contactless breathing/heart rate extraction — built entirely in software, with zero RF hardware required.
+> A complete FMCW radar signal processing pipeline from raw chirp simulation to through-wall human detection and contactless breathing/heart rate extraction built entirely in software, with zero RF hardware required.
 
 ---
 
